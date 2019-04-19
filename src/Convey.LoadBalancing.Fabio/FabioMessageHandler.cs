@@ -2,19 +2,18 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Polly;
 
-namespace DShop.Common.Fabio
+namespace Convey.LoadBalancing.Fabio
 {
     public class FabioMessageHandler : DelegatingHandler
     {
-        private readonly IOptions<FabioOptions> _options;
+        private readonly FabioOptions _options;
         private readonly string _servicePath;
 
-        public FabioMessageHandler(IOptions<FabioOptions> options, string serviceName = null)
+        public FabioMessageHandler(FabioOptions options, string serviceName = null)
         {
-            if (string.IsNullOrWhiteSpace(options.Value.Url))
+            if (string.IsNullOrWhiteSpace(options.Url))
             {
                 throw new InvalidOperationException("Fabio URL was not provided.");
             }
@@ -34,8 +33,8 @@ namespace DShop.Common.Fabio
         }
 
         private Uri GetRequestUri(HttpRequestMessage request)
-            =>  new Uri($"{_options.Value.Url}/{_servicePath}{request.RequestUri.Host}{request.RequestUri.PathAndQuery}");
+            =>  new Uri($"{_options.Url}/{_servicePath}{request.RequestUri.Host}{request.RequestUri.PathAndQuery}");
         
-        private int RequestRetries => _options.Value.RequestRetries <= 0 ? 3 : _options.Value.RequestRetries;
+        private int RequestRetries => _options.RequestRetries <= 0 ? 3 : _options.RequestRetries;
     }
 }

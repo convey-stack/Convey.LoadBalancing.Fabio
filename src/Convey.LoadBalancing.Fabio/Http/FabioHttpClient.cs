@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.Threading.Tasks;
-using DShop.Common.Fabio;
 using Newtonsoft.Json;
 
 namespace Convey.LoadBalancing.Fabio.Http

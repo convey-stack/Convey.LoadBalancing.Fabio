@@ -1,5 +1,3 @@
-using DShop.Common.Fabio;
-
 namespace Convey.LoadBalancing.Fabio.Builders
 {
     public class FabioOptionsBuilder : IFabioOptionsBuilder

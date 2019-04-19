@@ -1,4 +1,4 @@
-namespace DShop.Common.Fabio
+namespace Convey.LoadBalancing.Fabio
 {
     public class FabioOptions
     {

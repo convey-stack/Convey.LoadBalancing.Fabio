@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace DShop.Common.Fabio
+namespace Convey.LoadBalancing.Fabio
 {
     public interface IFabioHttpClient
     {

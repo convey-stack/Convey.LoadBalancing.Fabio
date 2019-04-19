@@ -4,7 +4,6 @@ using Consul;
 using Convey.Discovery.Consul;
 using Convey.LoadBalancing.Fabio.Builders;
 using Convey.LoadBalancing.Fabio.Http;
-using DShop.Common.Fabio;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Convey.LoadBalancing.Fabio
