@@ -38,6 +38,7 @@ namespace Convey.LoadBalancing.Fabio
             }
 
             registerConsul(builder);
+            builder.Services.AddSingleton(options);
             builder.Services.AddTransient<FabioMessageHandler>();
             builder.Services.AddHttpClient<IFabioHttpClient, FabioHttpClient>()
                 .AddHttpMessageHandler<FabioMessageHandler>();
