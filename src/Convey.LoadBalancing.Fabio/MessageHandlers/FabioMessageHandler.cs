@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Polly;
 
-namespace Convey.LoadBalancing.Fabio
+namespace Convey.LoadBalancing.Fabio.MessageHandlers
 {
-    public class FabioMessageHandler : DelegatingHandler
+    internal sealed class FabioMessageHandler : DelegatingHandler
     {
         private readonly FabioOptions _options;
         private readonly string _servicePath;

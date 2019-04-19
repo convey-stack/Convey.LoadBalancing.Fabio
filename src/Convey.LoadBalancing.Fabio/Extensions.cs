@@ -4,6 +4,7 @@ using Consul;
 using Convey.Discovery.Consul;
 using Convey.LoadBalancing.Fabio.Builders;
 using Convey.LoadBalancing.Fabio.Http;
+using Convey.LoadBalancing.Fabio.MessageHandlers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Convey.LoadBalancing.Fabio
@@ -52,7 +53,12 @@ namespace Convey.LoadBalancing.Fabio
 
             return builder;
         }
-
+        
+        public static void AddFabioHttpClient(this IConveyBuilder builder, string clientName, string serviceName)
+            => builder.Services.AddHttpClient(clientName)
+                .AddHttpMessageHandler(c =>
+                    new FabioMessageHandler(c.GetService<FabioOptions>(), serviceName));
+        
         private static void UpdateConsulRegistration(this IServiceCollection services, AgentServiceRegistration registration)
         {
             var serviceDescriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(AgentServiceRegistration));
