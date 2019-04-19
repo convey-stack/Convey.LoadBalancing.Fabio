@@ -14,10 +14,10 @@ namespace Convey.LoadBalancing.Fabio
         private const string SectionName = "fabio";
         private const string RegistryName = "loadBalancing.fabio";
 
-        public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName, string consulSettings = "consul")
+        public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName, string consulSectionName = "consul")
         {
             var options = builder.GetOptions<FabioOptions>(SectionName);
-            var consulOptions = builder.GetOptions<ConsulOptions>(consulSettings);
+            var consulOptions = builder.GetOptions<ConsulOptions>(consulSectionName);
             return builder.AddFabio(options, b => b.AddConsul(consulOptions));
         }
         
