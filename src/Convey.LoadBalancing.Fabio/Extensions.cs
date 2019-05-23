@@ -16,7 +16,7 @@ namespace Convey.LoadBalancing.Fabio
 
         public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName, string consulSectionName = "consul")
         {
-            var options = builder.GetOptions<FabioOptions>(SectionName);
+            var options = builder.GetOptions<FabioOptions>(sectionName);
             var consulOptions = builder.GetOptions<ConsulOptions>(consulSectionName);
             return builder.AddFabio(options, b => b.AddConsul(consulOptions));
         }
