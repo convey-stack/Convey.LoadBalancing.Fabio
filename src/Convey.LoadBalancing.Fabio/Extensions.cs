@@ -62,9 +62,8 @@ namespace Convey.LoadBalancing.Fabio
         }
 
         public static void AddFabioHttpClient(this IConveyBuilder builder, string clientName, string serviceName)
-            => builder.Services.AddHttpClient(clientName)
-                .AddHttpMessageHandler(c =>
-                    new FabioMessageHandler(c.GetService<FabioOptions>(), serviceName));
+            => builder.Services.AddHttpClient<IHttpClient, FabioHttpClient>(clientName)
+                .AddHttpMessageHandler(c => new FabioMessageHandler(c.GetService<FabioOptions>(), serviceName));
 
         private static void UpdateConsulRegistration(this IServiceCollection services,
             AgentServiceRegistration registration)
