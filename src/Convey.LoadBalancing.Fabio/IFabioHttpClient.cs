@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
+using Convey.HTTP;
 
 namespace Convey.LoadBalancing.Fabio
 {
-    public interface IFabioHttpClient
+    public interface IFabioHttpClient : IHttpClient
     {
-        Task<T> GetAsync<T>(string requestUri);
     }
 }

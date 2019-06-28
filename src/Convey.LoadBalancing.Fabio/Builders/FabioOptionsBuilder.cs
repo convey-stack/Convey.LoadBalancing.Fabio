@@ -3,7 +3,7 @@ namespace Convey.LoadBalancing.Fabio.Builders
     public class FabioOptionsBuilder : IFabioOptionsBuilder
     {
         private FabioOptions _options = new FabioOptions();
-        
+
         public IFabioOptionsBuilder Enable(bool enabled)
         {
             _options.Enabled = enabled;
@@ -22,13 +22,6 @@ namespace Convey.LoadBalancing.Fabio.Builders
             return this;
         }
 
-        public IFabioOptionsBuilder WithRequestRetries(int requestRetries)
-        {
-            _options.RequestRetries = requestRetries;
-            return this;
-        }
-
-        public FabioOptions Build()
-            => _options;
+        public FabioOptions Build() => _options;
     }
 }

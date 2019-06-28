@@ -2,7 +2,6 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Polly;
 
 namespace Convey.LoadBalancing.Fabio.MessageHandlers
 {
@@ -22,19 +21,20 @@ namespace Convey.LoadBalancing.Fabio.MessageHandlers
             _servicePath = string.IsNullOrWhiteSpace(serviceName) ? string.Empty : $"{serviceName}/";
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            if (!_options.Enabled)
+            {
+                return base.SendAsync(request, cancellationToken);
+            }
+
             request.RequestUri = GetRequestUri(request);
 
-            return await Policy.Handle<Exception>()
-                .WaitAndRetryAsync(RequestRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
-                .ExecuteAsync(async () => await base.SendAsync(request, cancellationToken));
+            return base.SendAsync(request, cancellationToken);
         }
 
         private Uri GetRequestUri(HttpRequestMessage request)
-            =>  new Uri($"{_options.Url}/{_servicePath}{request.RequestUri.Host}{request.RequestUri.PathAndQuery}");
-        
-        private int RequestRetries => _options.RequestRetries <= 0 ? 3 : _options.RequestRetries;
+            => new Uri($"{_options.Url}/{_servicePath}{request.RequestUri.Host}{request.RequestUri.PathAndQuery}");
     }
 }

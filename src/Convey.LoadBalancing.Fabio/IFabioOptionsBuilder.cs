@@ -5,7 +5,6 @@ namespace Convey.LoadBalancing.Fabio
         IFabioOptionsBuilder Enable(bool enabled);
         IFabioOptionsBuilder WithUrl(string url);
         IFabioOptionsBuilder WithService(string service);
-        IFabioOptionsBuilder WithRequestRetries(int requestRetries);
         FabioOptions Build();
     }
 }

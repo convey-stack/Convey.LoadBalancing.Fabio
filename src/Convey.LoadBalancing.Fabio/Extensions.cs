@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Consul;
 using Convey.Discovery.Consul;
+using Convey.HTTP;
 using Convey.LoadBalancing.Fabio.Builders;
 using Convey.LoadBalancing.Fabio.Http;
 using Convey.LoadBalancing.Fabio.MessageHandlers;
@@ -14,24 +15,28 @@ namespace Convey.LoadBalancing.Fabio
         private const string SectionName = "fabio";
         private const string RegistryName = "loadBalancing.fabio";
 
-        public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName, string consulSectionName = "consul")
+        public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName,
+            string consulSectionName = "consul")
         {
             var options = builder.GetOptions<FabioOptions>(sectionName);
             var consulOptions = builder.GetOptions<ConsulOptions>(consulSectionName);
             return builder.AddFabio(options, b => b.AddConsul(consulOptions));
         }
-        
-        public static IConveyBuilder AddFabio(this IConveyBuilder builder, Func<IFabioOptionsBuilder, IFabioOptionsBuilder> buildOptions,
+
+        public static IConveyBuilder AddFabio(this IConveyBuilder builder,
+            Func<IFabioOptionsBuilder, IFabioOptionsBuilder> buildOptions,
             Func<IConsulOptionsBuilder, IConsulOptionsBuilder> buildConsulOptions)
         {
             var options = buildOptions(new FabioOptionsBuilder()).Build();
             return builder.AddFabio(options, b => b.AddConsul(buildConsulOptions));
         }
-        
-        public static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options, ConsulOptions consulOptions)
+
+        public static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options,
+            ConsulOptions consulOptions)
             => builder.AddFabio(options, b => b.AddConsul(consulOptions));
 
-        private static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options, Action<IConveyBuilder> registerConsul)
+        private static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options,
+            Action<IConveyBuilder> registerConsul)
         {
             if (!options.Enabled || !builder.TryRegister(RegistryName))
             {
@@ -43,6 +48,8 @@ namespace Convey.LoadBalancing.Fabio
             builder.Services.AddTransient<FabioMessageHandler>();
             builder.Services.AddHttpClient<IFabioHttpClient, FabioHttpClient>()
                 .AddHttpMessageHandler<FabioMessageHandler>();
+            builder.Services.AddHttpClient<IHttpClient, FabioHttpClient>()
+                .AddHttpMessageHandler<FabioMessageHandler>();
 
             using (var serviceProvider = builder.Services.BuildServiceProvider())
             {
@@ -53,19 +60,20 @@ namespace Convey.LoadBalancing.Fabio
 
             return builder;
         }
-        
+
         public static void AddFabioHttpClient(this IConveyBuilder builder, string clientName, string serviceName)
             => builder.Services.AddHttpClient(clientName)
                 .AddHttpMessageHandler(c =>
                     new FabioMessageHandler(c.GetService<FabioOptions>(), serviceName));
-        
-        private static void UpdateConsulRegistration(this IServiceCollection services, AgentServiceRegistration registration)
+
+        private static void UpdateConsulRegistration(this IServiceCollection services,
+            AgentServiceRegistration registration)
         {
             var serviceDescriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(AgentServiceRegistration));
             services.Remove(serviceDescriptor);
             services.AddSingleton(registration);
         }
-        
+
         private static string[] GetFabioTags(string consulService, string fabioService)
         {
             var service = (string.IsNullOrWhiteSpace(fabioService) ? consulService : fabioService)
