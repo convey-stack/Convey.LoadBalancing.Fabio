@@ -38,13 +38,14 @@ namespace Convey.LoadBalancing.Fabio
         private static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options,
             Action<IConveyBuilder> registerConsul)
         {
+            registerConsul(builder);
+            builder.Services.AddSingleton(options);
+
             if (!options.Enabled || !builder.TryRegister(RegistryName))
             {
                 return builder;
             }
 
-            registerConsul(builder);
-            builder.Services.AddSingleton(options);
             builder.Services.AddTransient<FabioMessageHandler>();
             builder.Services.AddHttpClient<IFabioHttpClient, FabioHttpClient>()
                 .AddHttpMessageHandler<FabioMessageHandler>();
