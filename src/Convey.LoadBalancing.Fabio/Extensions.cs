@@ -16,46 +16,53 @@ namespace Convey.LoadBalancing.Fabio
         private const string RegistryName = "loadBalancing.fabio";
 
         public static IConveyBuilder AddFabio(this IConveyBuilder builder, string sectionName = SectionName,
-            string consulSectionName = "consul")
+            string consulSectionName = "consul", string httpClientSectionName = "httpClient")
         {
-            var options = builder.GetOptions<FabioOptions>(sectionName);
+            var fabioOptions = builder.GetOptions<FabioOptions>(sectionName);
             var consulOptions = builder.GetOptions<ConsulOptions>(consulSectionName);
-            return builder.AddFabio(options, b => b.AddConsul(consulOptions));
+            var httpClientOptions = builder.GetOptions<HttpClientOptions>(httpClientSectionName);
+            return builder.AddFabio(fabioOptions, httpClientOptions,
+                b => b.AddConsul(consulOptions, httpClientOptions));
         }
 
         public static IConveyBuilder AddFabio(this IConveyBuilder builder,
             Func<IFabioOptionsBuilder, IFabioOptionsBuilder> buildOptions,
-            Func<IConsulOptionsBuilder, IConsulOptionsBuilder> buildConsulOptions)
+            Func<IConsulOptionsBuilder, IConsulOptionsBuilder> buildConsulOptions,
+            HttpClientOptions httpClientOptions)
         {
-            var options = buildOptions(new FabioOptionsBuilder()).Build();
-            return builder.AddFabio(options, b => b.AddConsul(buildConsulOptions));
+            var fabioOptions = buildOptions(new FabioOptionsBuilder()).Build();
+            return builder.AddFabio(fabioOptions, httpClientOptions,
+                b => b.AddConsul(buildConsulOptions, httpClientOptions));
         }
 
-        public static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options,
-            ConsulOptions consulOptions)
-            => builder.AddFabio(options, b => b.AddConsul(consulOptions));
+        public static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions fabioOptions,
+            ConsulOptions consulOptions, HttpClientOptions httpClientOptions)
+            => builder.AddFabio(fabioOptions, httpClientOptions, b => b.AddConsul(consulOptions, httpClientOptions));
 
-        private static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions options,
-            Action<IConveyBuilder> registerConsul)
+        private static IConveyBuilder AddFabio(this IConveyBuilder builder, FabioOptions fabioOptions,
+            HttpClientOptions httpClientOptions, Action<IConveyBuilder> registerConsul)
         {
             registerConsul(builder);
-            builder.Services.AddSingleton(options);
+            builder.Services.AddSingleton(fabioOptions);
 
-            if (!options.Enabled || !builder.TryRegister(RegistryName))
+            if (!fabioOptions.Enabled || !builder.TryRegister(RegistryName))
             {
                 return builder;
             }
 
-            builder.Services.AddTransient<FabioMessageHandler>();
-            builder.Services.AddHttpClient<IFabioHttpClient, FabioHttpClient>()
-                .AddHttpMessageHandler<FabioMessageHandler>();
-            builder.Services.AddHttpClient<IHttpClient, FabioHttpClient>()
-                .AddHttpMessageHandler<FabioMessageHandler>();
+            if (httpClientOptions.Type?.ToLowerInvariant() == "fabio")
+            {
+                builder.Services.AddTransient<FabioMessageHandler>();
+                builder.Services.AddHttpClient<IFabioHttpClient, FabioHttpClient>()
+                    .AddHttpMessageHandler<FabioMessageHandler>();
+                builder.Services.AddHttpClient<IHttpClient, FabioHttpClient>()
+                    .AddHttpMessageHandler<FabioMessageHandler>();
+            }
 
             using (var serviceProvider = builder.Services.BuildServiceProvider())
             {
                 var registration = serviceProvider.GetService<AgentServiceRegistration>();
-                registration.Tags = GetFabioTags(registration.Name, options.Service);
+                registration.Tags = GetFabioTags(registration.Name, fabioOptions.Service);
                 builder.Services.UpdateConsulRegistration(registration);
             }
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Convey.LoadBalancing.Fabio.Http
 {
-    public class FabioHttpClient : ConveyHttpClient, IFabioHttpClient
+    internal sealed class FabioHttpClient : ConveyHttpClient, IFabioHttpClient
     {
         public FabioHttpClient(HttpClient client, HttpClientOptions options, ILogger<IHttpClient> logger)
             : base(client, options, logger)
